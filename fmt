@@ -1,0 +1,37 @@
+// Fprint 将参数列表 a 中的各个参数转换为字符串格式并写入到 w 中
+// 各个参数之间以空格分隔，返回写入的字节数
+func Fprint(w io.Writer, a ...interface{}) (n int, err error)
+例：fmt.Fprint(os.Stdout, "A")
+
+// Fprintln 在 Fprint 的基础上，再向 w 中写入一个换行符
+func Fprintln(w io.Writer, a ...interface{}) (n int, err error)
+例：fmt.Fprintln(os.Stdout, "A")
+
+// Print 将参数列表 a 中的各个参数转换为字符串格式并写入到 os.Stdout 中
+// 各个参数之间以空格分隔，返回写入的字节数
+func Print(a ...interface{}) (n int, err error)
+例fmt.Print("Hello World!")
+
+// Println 在 Print 的基础上，再向 os.Stdout 中写入一个换行符
+func Println(a ...interface{}) (n int, err error)
+例fmt.Println("Hello World!")
+
+
+// Fprintf 将参数列表 a 填写到格式字符串 format 的占位符中
+// 并将填写后的结果写入 w 中，返回写入的字节数
+func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error)
+例fmt.Fprintf(os.Stdout, "%08b\n", 32) // 00100000
+
+// Printf 将参数列表 a 填写到格式字符串 format 的占位符中
+// 并将填写后的结果写入 os.Stdout 中，返回写入的字节数
+func Printf(format string, a ...interface{}) (n int, err error)
+例fmt.Printf("%08b\n", 32) // 00100000
+
+// Sprintf 将参数列表 a 填写到格式字符串 format 的占位符中
+// 返回填写后的结果
+func Sprintf(format string, a ...interface{}) string
+例fmt.Print(fmt.Sprintf("%08b\n", 32)) // 00100000
+
+// Errorf 将参数列表 a 填写到格式字符串 format 的占位符中
+// 并将填写后的结果转换为 error 类型返回
+func Errorf(format string, a ...interface{}) error
