@@ -5,13 +5,14 @@ package main
 import (
 	"flag"
 	"fmt"
+
 	//	"math"
 	//	"os"
 	//	"path"
 	//	"strings"
 	//	"unicode/utf8"
 
-	"github.com/lxn/walk"
+	//	"github.com/lxn/walk"
 	//	. "github.com/lxn/walk/declarative"
 	//	"github.com/lxn/win"
 	"github.com/serialgui"
@@ -19,18 +20,9 @@ import (
 
 var (
 	uiflag *string //environment parament
-	inTE   *walk.TextEdit
-
 //	mycanvas *walk.Canvas
 //	mytangle walk.Rectangle
 )
-
-type MyMainWindow struct {
-	*walk.MainWindow
-	tabWidget *walk.TabWidget
-	//	tabPage   *walk.TabPage
-	//	prevFilePath string
-}
 
 func main() {
 	uiflag = flag.String("_ui", "gui", "   <选择操作界面> [web] [gui] [cmd]")
