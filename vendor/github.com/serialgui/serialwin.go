@@ -2,7 +2,8 @@ package serialgui
 
 import (
 	"fmt"
-	//	"log"
+	"log"
+
 	//	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 )
@@ -113,7 +114,7 @@ func SerialWindow() {
 	//	var tooldatas *ToolDataS
 	var tooldatas *Tooldatabind
 	tooldatas = new(Tooldatabind)
-	listtext := "Hello Wold"
+	// listtext := "Hello Wold"
 	tooldatas = &Tooldatabind{1, 115200, 4, 1, 1, Inputascii, Outputscii, false, "1000"}
 	if err := (MainWindow{
 		AssignTo: &mw, //.MainWindow,
@@ -128,6 +129,7 @@ func SerialWindow() {
 		Layout:  VBox{},
 		Children: []Widget{
 			HSplitter{
+				// AssignTo: &hspl,
 				Name:    "Lay window",
 				MaxSize: Size{200, 400},
 				Children: []Widget{
@@ -255,11 +257,16 @@ func SerialWindow() {
 							},
 						},
 					},
-					ListBox{
-						Name:       "串口数据",
-						Column:     2,
-						DataMember: listtext,
+					LogView{
+						AssignTo: &llb,
+						Name:     "串口数据",
 					},
+					// TableView{
+					// 	AssignTo: &tlb,
+					// 	Name:     "串口数据",
+					// 	// Column:   2,
+					// 	// DataMember: listtext,
+					// },
 				},
 			},
 			Composite{
@@ -285,6 +292,7 @@ func SerialWindow() {
 								OnClicked: func() {
 									//									fmt.Println("TEST", tooldatas.Deviceid)
 									fmt.Printf("%+v\n", tooldatas)
+									log.Println("Text" + "\n")
 									//									tooldatas.Deviceid = 2
 									//									deviceid = "COM4"
 								},
@@ -297,6 +305,14 @@ func SerialWindow() {
 	}.Create()); err != nil {
 		panic(err)
 	}
+
+	// lv, err := NewLogView(hspl)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// lv.PostAppendText("XXX")
+	log.SetOutput(llb)
+
 	// 运行窗体程序
 	mw.Run()
 }
