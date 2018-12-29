@@ -5,6 +5,7 @@ import (
 	"log"
 
 	//	"github.com/lxn/walk"
+	"github.com/lnmx/serial"
 	. "github.com/lxn/walk/declarative"
 )
 
@@ -55,6 +56,13 @@ type DeviceData struct {
 	Device     int
 	Devicename string
 }
+
+var (
+	openserialSwitch bool
+	serialstatus     bool
+	config           serial.Config
+	port             *serial.Port
+)
 
 func DeviceID() []*DeviceData {
 	return []*DeviceData{
@@ -114,6 +122,9 @@ func SerialWindow() {
 	//	var tooldatas *ToolDataS
 	var tooldatas *Tooldatabind
 	tooldatas = new(Tooldatabind)
+	// var abort = make(chan int)
+	openserialSwitch = false
+	serialstatus = false
 	// listtext := "Hello Wold"
 	tooldatas = &Tooldatabind{1, 115200, 4, 1, 1, Inputascii, Outputscii, false, "1000"}
 	if err := (MainWindow{
@@ -130,15 +141,17 @@ func SerialWindow() {
 		Children: []Widget{
 			HSplitter{
 				// AssignTo: &hspl,
-				Name:    "Lay window",
-				MaxSize: Size{200, 400},
+				Name: "Lay window",
+				// MaxSize: Size{200, 400},
 				Children: []Widget{
 					VSplitter{
-						Name: "Lay window",
+						Name:    "Lay window",
+						MaxSize: Size{200, 400},
 						Children: []Widget{
 							GroupBox{
-								Name:   "设备号设置",
-								Title:  "设备号设置",
+								Name:  "设备号设置",
+								Title: "设备号设置",
+								// MaxSize: Size{200, 400},
 								Layout: HBox{}, //Grid{Columns: 2}, //
 								Children: []Widget{
 									Label{
@@ -148,13 +161,15 @@ func SerialWindow() {
 										Value:         Bind("Deviceid", SelRequired{}), //
 										BindingMember: "Device",
 										DisplayMember: "Devicename",
-										Model:         DeviceID(),
+										// MaxSize:       Size{Width: 80, Height: 0},
+										Model: DeviceID(),
 									},
 								},
 							},
 							GroupBox{
-								Name:   "波特率设置",
-								Title:  "波特率设置",
+								Name:  "波特率设置",
+								Title: "波特率设置",
+								// MaxSize: Size{200, 400},
 								Layout: HBox{}, //Grid{Columns: 2}, //
 								Children: []Widget{
 									Label{
@@ -170,8 +185,9 @@ func SerialWindow() {
 								},
 							},
 							GroupBox{
-								Name:   "数据位设置",
-								Title:  "数据位设置",
+								Name:  "数据位设置",
+								Title: "数据位设置",
+								// MaxSize: Size{200, 400},
 								Layout: HBox{}, //Grid{Columns: 2}, //
 								Children: []Widget{
 									Label{
@@ -187,8 +203,9 @@ func SerialWindow() {
 							},
 
 							GroupBox{
-								Name:   "校验位设置",
-								Title:  "校验位设置",
+								Name:  "校验位设置",
+								Title: "校验位设置",
+								// MaxSize: Size{200, 400},
 								Layout: HBox{}, //Grid{Columns: 2}, //
 								Children: []Widget{
 									Label{
@@ -203,8 +220,9 @@ func SerialWindow() {
 								},
 							},
 							GroupBox{
-								Name:   "停止位设置",
-								Title:  "停止位设置",
+								Name:  "停止位设置",
+								Title: "停止位设置",
+								// MaxSize: Size{200, 400},
 								Layout: HBox{}, //Grid{Columns: 2}, //
 								Children: []Widget{
 									Label{
@@ -223,6 +241,7 @@ func SerialWindow() {
 								ColumnSpan: 2,
 								Title:      "接收设置",
 								Layout:     HBox{},
+								// MaxSize:    Size{200, 400},
 								DataMember: "Receivemode",
 								Buttons: []RadioButton{
 									{Text: "ACSII", Value: Inputascii},
@@ -233,6 +252,7 @@ func SerialWindow() {
 								ColumnSpan: 2,
 								Title:      "发送设置",
 								Layout:     HBox{},
+								// MaxSize:    Size{200, 400},
 								DataMember: "Sendmode",
 								Buttons: []RadioButton{
 									{Text: "ACSII", Value: Outputscii},
@@ -240,8 +260,9 @@ func SerialWindow() {
 								},
 							},
 							GroupBox{
-								Name:   "发送方式设置",
-								Title:  "发送方式设置",
+								Name:  "发送方式设置",
+								Title: "发送方式设置",
+								// MaxSize: Size{200, 400},
 								Layout: HBox{}, //Grid{Columns: 2}, //
 								Children: []Widget{
 									CheckBox{
@@ -260,6 +281,7 @@ func SerialWindow() {
 					LogView{
 						AssignTo: &llb,
 						Name:     "串口数据",
+						MinSize:  Size{Width: 400, Height: 100},
 					},
 					// TableView{
 					// 	AssignTo: &tlb,
@@ -281,18 +303,62 @@ func SerialWindow() {
 							PushButton{
 								Name: "打开串口",
 								Text: "打开串口",
+								OnClicked: func() {
+									var err error
+									if !openserialSwitch {
+										//	devicename := DeviceID()
+										port = serial.NewPort()
+										config := port.Config()
+										config.Device = "COM3"   //devicename[tooldatas.Deviceid].Devicename
+										config.BaudRate = 921600 //tooldatas.Daudratevalue
+										// config.DataBits = tooldatas.Datawidthvalue
+										// config.StopBits = tooldatas.Stopbitvalue
+										// config.Parity = tooldatas.Parityvalue
+										err = port.Configure(config)
+
+										if err != nil {
+											log.Println("Configure serial failed" + "\n")
+											return
+										}
+										err = port.Open()
+										if err != nil {
+											log.Println("Open serial failed" + "\n")
+											return
+										}
+										log.Println("Configure serial Success")
+										openserialSwitch = true
+										buf := make([]byte, 100)
+										port.Read(buf)
+										log.Printf("%s", buf)
+										// abort <- 1
+									} else {
+										if port != nil {
+											port.Close()
+										}
+										port = nil
+										openserialSwitch = false
+
+									}
+								},
 							},
+
 							PushButton{
 								Name: "清除输入",
 								Text: "清除输入",
+								OnClicked: func() {
+									//									fmt.Println("TEST", tooldatas.Deviceid)
+									fmt.Printf("%+v\n", tooldatas)
+									log.Println("Text" + "\n")
+								},
 							},
 							PushButton{
 								Name: "清除输出",
 								Text: "清除输出",
 								OnClicked: func() {
 									//									fmt.Println("TEST", tooldatas.Deviceid)
-									fmt.Printf("%+v\n", tooldatas)
-									log.Println("Text" + "\n")
+									// fmt.Printf("%+v\n", tooldatas)
+									// log.Println("Text" + "\n")
+									llb.Clear()
 									//									tooldatas.Deviceid = 2
 									//									deviceid = "COM4"
 								},
@@ -312,7 +378,40 @@ func SerialWindow() {
 	// }
 	// lv.PostAppendText("XXX")
 	log.SetOutput(llb)
-
+	// go func(s *serial.Port) {
+	// 	// bufstring := make([]byte, 256)
+	// 	// var readcnt int16
+	// 	// buf := make([]byte, 1)
+	// 	for {
+	// 		if openserialSwitch {
+	// 			// s.Read(buf) //err _, _ :=
+	// 			// if err != nil {
+	// 			 	fmt.Println("port.Read failed")
+	// 			// 	// log.Fatal(err)
+	// 			// 	return
+	// 			// }
+	// 			// if cn == 1 {
+	// 			// 	if readcnt < 256 {
+	// 			// 		bufstring[readcnt] = buf[0]
+	// 			// 		readcnt++
+	// 			// 		bufstring[readcnt] = 0
+	// 			// 	} else {
+	// 			// 		readcnt = 0
+	// 			// 		bufstring[readcnt] = buf[0]
+	// 			// 		bufstring[1] = 0
+	// 			// 	}
+	// 			// 	if buf[0] == '\n' || buf[0] == '\r' {
+	// 			// 		fmt.Printf("%s", bufstring)
+	// 			// 		// log.Printf("%s", bufstring)
+	// 			// 	}
+	// 			// }
+	// 			//				log.Printf("%s", buf)
+	// 		}
+	// 		//  else {
+	// 		// 	<-abort
+	// 		// }
+	// 	}
+	// }(port)
 	// 运行窗体程序
 	mw.Run()
 }
